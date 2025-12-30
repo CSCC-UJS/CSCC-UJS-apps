@@ -1,0 +1,1 @@
+from.setup_page_videoplayer import SetupPageVideoPlayer
