@@ -165,7 +165,6 @@ class MPVPlayerCore:
             print(f"字幕注入失败：{type(e).__name__} - {e} | 字幕内容：{subtitle_text[:100]}")
 
     def _srt_time_to_seconds(self, srt_time):
-        
         #转换 SRT 时间格式
         try:
             hours, minutes, seconds = srt_time.split(":")
@@ -180,6 +179,35 @@ class MPVPlayerCore:
         except:
             return 0.0
 
+    def fast_forward(self):
+        if not self.current_file:
+            raise ValueError("未加载视频文件，无法快进")
+    
+        total_duration = self.get_duration()
+        current_pos = self.get_position()
+    
+        increment = total_duration * 0.01
+        if increment <= 0: 
+            return
+    
+        new_pos = min(current_pos + increment, total_duration)
+    
+
+        self.set_position(new_pos)
+
+    def fast_rewind(self):
+        if not self.current_file:
+            raise ValueError("未加载视频文件，无法快退")
+    
+        total_duration = self.get_duration()
+        current_pos = self.get_position()
+    
+        increment = total_duration * 0.01
+        if increment <= 0:
+            return
+    
+        new_pos = max(current_pos - increment, 0)
+        self.set_position(new_pos)
 
     def cleanup(self):
         self.stop()

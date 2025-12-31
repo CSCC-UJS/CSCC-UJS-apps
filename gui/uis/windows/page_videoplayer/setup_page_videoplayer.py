@@ -184,8 +184,10 @@ class SetupPageVideoPlayer(QObject):
         
         self.ui.load_pages.video_widget.mousePressEvent = self.on_video_widget_click
         
-        self.ui.load_pages.stop_btn.clicked.connect(self._on_toggle_play_pause)
-        
+        self.ui.load_pages.stop_btn.clicked.connect(self.on_toggle_play_pause)
+        self.ui.load_pages.next_btn.clicked.connect(self.on_fast_forward)
+        self.ui.load_pages.prev_btn.clicked.connect(self.on_fast_rewind)
+
         self.ui.load_pages.progressbar.sliderPressed.connect(self.on_progress_slider_pressed)
         self.ui.load_pages.progressbar.sliderReleased.connect(self.on_progress_slider_released)
         self.ui.load_pages.progressbar.valueChanged.connect(self.on_progress_slider_value_changed)
@@ -347,7 +349,7 @@ class SetupPageVideoPlayer(QObject):
         self.player_core.stop()
         self.ui.load_pages.video_widget.setToolTip("点击选择视频/音频文件播放")
 
-    def _on_toggle_play_pause(self):
+    def on_toggle_play_pause(self):
         try:
             if not hasattr(self.player_core, 'current_file') or not self.player_core.current_file:
                 raise ValueError("未加载任何视频/音频文件，请先选择文件！")
@@ -364,6 +366,41 @@ class SetupPageVideoPlayer(QObject):
             QMessageBox.warning(self.ui.load_pages.video_widget, "提示", str(e))
         except Exception as e:
             QMessageBox.warning(self.ui.load_pages.video_widget, "错误", f"播放/暂停切换失败：{str(e)}")
+
+    def on_fast_forward(self):
+        try:
+            if not hasattr(self.player_core, 'current_file') or not self.player_core.current_file:
+                raise ValueError("未加载任何视频/音频文件，请先选择文件！")
+            self.player_core.fast_forward()
+            if self.player_core.is_playing == True:
+                self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("resume.svg"))
+            else:
+                self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("pause.svg"))  
+        except AttributeError as e:
+            QMessageBox.warning(self.ui.load_pages.video_widget, "错误", f"播放器状态获取失败：{str(e)}")
+        except ValueError as e:
+            QMessageBox.warning(self.ui.load_pages.video_widget, "提示", str(e))
+        except Exception as e:
+            QMessageBox.warning(self.ui.load_pages.video_widget, "错误", f"快进失败：{str(e)}")
+    
+    def on_fast_rewind(self):
+        try:
+            if not hasattr(self.player_core, 'current_file') or not self.player_core.current_file:
+                raise ValueError("未加载任何视频/音频文件，请先选择文件！")
+            self.player_core.fast_rewind()
+            if self.player_core.is_playing == True:
+                self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("resume.svg"))
+            else:
+                self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("pause.svg"))  
+        except AttributeError as e:
+            QMessageBox.warning(self.ui.load_pages.video_widget, "错误", f"播放器状态获取失败：{str(e)}")
+        except ValueError as e:
+            QMessageBox.warning(self.ui.load_pages.video_widget, "提示", str(e))
+        except Exception as e:
+            QMessageBox.warning(self.ui.load_pages.video_widget, "错误", f"快退失败：{str(e)}")
+
+
+
     # def progress_callback(pos, duration):
     #     if duration > 0:
     #         print(f"最终时长：{duration}")
