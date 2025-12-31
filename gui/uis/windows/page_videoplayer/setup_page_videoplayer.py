@@ -353,11 +353,13 @@ class SetupPageVideoPlayer(QObject):
         try:
             if not hasattr(self.player_core, 'current_file') or not self.player_core.current_file:
                 raise ValueError("未加载任何视频/音频文件，请先选择文件！")
+            # 切换播放/暂停状态
             self.player_core.toggle_play_pause()
+            # 更新按钮图标
             if self.player_core.is_playing == True:
-                self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("resume.svg"))
+                self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("pause.svg"))
             else:
-                self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("pause.svg"))  
+                self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("resume.svg"))
         except AttributeError as e:
             QMessageBox.warning(self.ui.load_pages.video_widget, "错误", f"播放器状态获取失败：{str(e)}")
         except ValueError as e:
