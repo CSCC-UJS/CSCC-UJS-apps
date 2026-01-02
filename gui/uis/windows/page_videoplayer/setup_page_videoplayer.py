@@ -64,14 +64,7 @@ class SetupPageVideoPlayer(QObject):
         self.total_duration=0
         # ASR SETTINGS
         # ///////////////////////////////////////////////////////////////
-        self.model=AutoModel(
-            model="paraformer-zh",
-            vad_model="fsmn-vad",
-            punc_model="ct-punc",
-            disable_update=True,
-            device="cpu",
-            model_revision="v2.0.4"
-        )
+        self.model=None
         # SETUP PAGE_VIDEOPLAYER
             # ///////////////////////////////////////////////////////////////
     def setup_player(self):
@@ -367,7 +360,6 @@ class SetupPageVideoPlayer(QObject):
                 self.video_select_label.hide()
                 
             self.update_progress_ui(0,self.total_duration)
-
             #self.start_subtitle_worker(file_path)
     def handle_video_widget_right_click(self,global_pos):
         self.show_subtitle_menu(global_pos)
@@ -444,12 +436,24 @@ class SetupPageVideoPlayer(QObject):
             temp_fd, temp_path = tempfile.mkstemp(suffix=".srt", prefix="temp_sub_")
             os.close(temp_fd)
             self.temp_srt = temp_path
-
+        QMessageBox.information(self.ui.load_pages.video_widget, "提示", "开始生成字幕，请稍候...\n生成过程中可正常播放视频")
+        self.model = AutoModel(
+            model="paraformer-zh",
+            vad_model="fsmn-vad",
+            punc_model="ct-punc",
+            isable_update=True,
+            device="cpu",
+            model_revision="v2.0.4"
+        )
         # 2. 创建字幕生成线程
         self.subtitle_worker = SubtitleWorker(
             model=self.model,
+            player_core=self.player_core,
             video_path=video_path,
-            srt_path=self.temp_srt
+            srt_path=self.temp_srt,
+            total_duration=self.total_duration,
+            slice_duration=20,
+            short_segment_threshold=3.0
         )
         self.subtitle_thread = QThread()
         self.subtitle_worker.moveToThread(self.subtitle_thread)
@@ -458,7 +462,7 @@ class SetupPageVideoPlayer(QObject):
         self.subtitle_thread.started.connect(self.subtitle_worker.run)
         # 启动线程
         self.subtitle_thread.start()
-        QMessageBox.information(self.ui.load_pages.video_widget, "提示", "开始生成字幕，请稍候...\n生成过程中可正常播放视频")
+        
 
     def on_subtitle_progress(self, msg, progress):
         #字幕生成进度回调
