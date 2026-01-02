@@ -42,6 +42,7 @@ from gui.core.subtitle_core import SubtitleWorker,clean_temp
 from gui.uis.windows.page_tools import SetupPageTools
 from gui.core.keyword_core import KeywordAbstract
 from gui.core.summary_core import Summary
+from funasr import AutoModel
 
 class SetupPageVideoPlayer(QObject):
     def __init__(self):
@@ -61,9 +62,18 @@ class SetupPageVideoPlayer(QObject):
         self.generate_subtitle_file = True  # 是否保存字幕文件
         self.subtitle_on=True #是否显示字幕
         self.total_duration=0
-
-    # SETUP PAGE_VIDEOPLAYER
-    # ///////////////////////////////////////////////////////////////
+        # ASR SETTINGS
+        # ///////////////////////////////////////////////////////////////
+        self.model=AutoModel(
+            model="paraformer-zh",
+            vad_model="fsmn-vad",
+            punc_model="ct-punc",
+            disable_update=True,
+            device="cpu",
+            model_revision="v2.0.4"
+        )
+        # SETUP PAGE_VIDEOPLAYER
+            # ///////////////////////////////////////////////////////////////
     def setup_player(self):
         # CHECK LOAD UI
         # ///////////////////////////////////////////////////////////////
@@ -437,6 +447,7 @@ class SetupPageVideoPlayer(QObject):
 
         # 2. 创建字幕生成线程
         self.subtitle_worker = SubtitleWorker(
+            model=self.model,
             video_path=video_path,
             srt_path=self.temp_srt
         )

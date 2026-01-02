@@ -244,22 +244,13 @@ class SubtitleWorker(QObject):
     progress = Signal(str, int)
     finished = Signal(bool, str)
 
-    def __init__(self, video_path, srt_path):
+    def __init__(self,model, video_path, srt_path):
         super().__init__()
         self.video_path = video_path
         self.srt_path = srt_path
         self.is_running = True
         self.converter=OpenCC('t2s')
-
-        self.model = AutoModel(
-            model="paraformer-zh",
-            vad_model="fsmn-vad",
-            punc_model="ct-punc",
-            disable_update=True,
-            device="cpu",
-            model_revision="v2.0.4"  # 锁定稳定版本，避免时间戳格式波动
-        )
-
+        self.model=model
     def run(self):
         audio_temp = "temp_audio.wav"
         try:
@@ -272,82 +263,12 @@ class SubtitleWorker(QObject):
 
             self.progress.emit(f"正在使用 funasr 模型识别...", 40)
 
-            result = self.model.generate(
-                input=audio_temp,
-                batch_size=16,
-                return_timestamps=True,
-                timestamp_type="word",
-                word_level=True
-                )
+            self.audio_to_subtitle(self.model,audio_temp,self.srt_path)
             if not self.is_running:
                 raise Exception("用户取消了生成")
 
             self.progress.emit("正在解析并保存字幕...", 80)
-            # 生成SRT内容
-            srt_content = []
-            srt_index = 1  # SRT序号从1开始
-
-            for seg_idx, segment in enumerate(result):
-                full_text = segment.get("text", "").strip()
-                word_timestamp_list = segment.get("timestamp", [])
-                if not full_text or not word_timestamp_list:
-                    continue
-
-                # 拆分文本为词列表
-                text_parts = re.findall(r"([^，。！？；：\s]+|[，。！？；：])", full_text)
-                word_list = [part for part in text_parts if part.strip()]
-
-                # 对齐词和时间戳长度
-                min_length = min(len(word_list), len(word_timestamp_list))
-                word_list = word_list[:min_length]
-                word_timestamp_list = word_timestamp_list[:min_length]
-
-                # 按句子合并生成SRT条目
-                current_sentence = []
-                current_start_ms = None
-                
-                for word, ts_item in zip(word_list, word_timestamp_list):
-                    start_ms, end_ms = self.get_word_timestamps(ts_item)
-                    
-                    if current_start_ms is None:
-                        current_start_ms = start_ms
-                    
-                    current_sentence.append(word)
-                    
-                    # 遇到句末标点，生成SRT条目
-                    if word in ["。", "！", "？", "；"]:
-                        # 转换时间格式
-                        start_srt = self.ms_to_srt_time(current_start_ms)
-                        end_srt = self.ms_to_srt_time(end_ms)
-                        # 拼接句子文本
-                        sentence_text = "".join(current_sentence)
-                        # 添加SRT条目
-                        srt_content.append(f"{srt_index}")
-                        srt_content.append(f"{start_srt} --> {end_srt}")
-                        srt_content.append(sentence_text)
-                        srt_content.append("")  # 空行分隔条目
-                        # 更新序号和缓存
-                        srt_index += 1
-                        current_sentence = []
-                        current_start_ms = None
-                
-                # 处理最后一句（无句末标点）
-                if current_sentence:
-                    start_ms = current_start_ms if current_start_ms else 0
-                    last_start_ms, last_end_ms = self.get_word_timestamps(word_timestamp_list[-1])
-                    start_srt = self.ms_to_srt_time(start_ms)
-                    end_srt = self.ms_to_srt_time(last_end_ms)
-                    sentence_text = "".join(current_sentence)
-                    # 添加最后一句的SRT条目
-                    srt_content.append(f"{srt_index}")
-                    srt_content.append(f"{start_srt} --> {end_srt}")
-                    srt_content.append(sentence_text)
-                    srt_content.append("")
-                    srt_index += 1
-
-            # 保存SRT文件
-            with open(self.srt_path, "w", encoding="utf-8") as f:
-                f.write("\n".join(srt_content))
+        
             # 提示字幕生成完成
             self.progress.emit("字幕生成完成！", 100)
             self.finished.emit(True, f"字幕已保存为SRT文件：{os.path.basename(self.srt_path)}")
@@ -357,23 +278,107 @@ class SubtitleWorker(QObject):
         finally:
             clean_temp([audio_temp])
 
-    def get_word_timestamps(self,timestamp_item):
-        if isinstance(timestamp_item, (list, tuple)):
-            if len(timestamp_item) == 2 and isinstance(timestamp_item[1], (list, tuple)):
-                return [int(timestamp_item[1][0]), int(timestamp_item[1][1])]
-            elif len(timestamp_item) >= 2:
-                return [int(timestamp_item[0]), int(timestamp_item[1])]
-        return [0, 100]
+    def format_time(self,seconds):
+        """将秒数格式化为 SRT 字幕时间格式: 00:00:00,000"""
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        ms = int((seconds - int(seconds)) * 1000)
+        return f"{hours:02d}:{minutes:02d}:{secs:02d},{ms:03d}"
 
-    # 辅助函数：转换毫秒到SRT时间格式 (00:00:00,000)
-    def ms_to_srt_time(self,ms):
-        seconds = ms // 1000
-        minutes = seconds // 60
-        hours = minutes // 60
-        remaining_seconds = seconds % 60
-        remaining_minutes = minutes % 60
-        remaining_ms = ms % 1000
-        return f"{hours:02d}:{remaining_minutes:02d}:{remaining_seconds:02d},{remaining_ms:03d}"
+    def split_text_by_punctuation(self,text, split_chars=None):
+        """按标点拆分文本，适配时间戳分段"""
+        if split_chars is None:
+            split_chars = r'，。！？；：、.?!;:'
+        parts = re.split(f'([{split_chars}])', text)
+        merged_parts = []
+        temp = ""
+        for part in parts:
+            if part:
+                temp += part
+                if part in split_chars:
+                    merged_parts.append(temp.strip())
+                    temp = ""
+        if temp:
+            merged_parts.append(temp.strip())
+        return merged_parts
+
+    # ==================== 复用模型生成字幕 ====================
+    def audio_to_subtitle(self,preloaded_model, audio_path, output_srt_path=None):
+
+        # 设置默认输出路径
+        if output_srt_path is None:
+            base_name = os.path.splitext(audio_path)[0]
+            output_srt_path = f"{base_name}.srt"
+        
+        # 复用模型进行推理（无需重新加载）
+        print(f"\n正在处理音频: {audio_path}")
+        res = preloaded_model.generate(
+            input=audio_path,
+            batch_size_s=30,
+            merge_vad=True,
+            use_itn=True,
+            add_pause=True,
+            predict_timestamp=True
+        )
+        
+        srt_content = []
+        index = 1
+        try:
+            full_text = res[0].get("text", "").strip()
+            timestamps_ms = res[0].get("timestamp", [])
+            
+            if not full_text or not timestamps_ms:
+                raise ValueError("未获取到有效文本或时间戳")
+            
+            # 拆分文本 + 匹配时间戳
+            text_segments = self.split_text_by_punctuation(full_text)
+            # 适配文本和时间戳数量
+            if len(text_segments) > len(timestamps_ms):
+                text_segments = text_segments[:len(timestamps_ms)]
+            elif len(text_segments) < len(timestamps_ms):
+                ts_per_segment = len(timestamps_ms) // len(text_segments)
+                remainder = len(timestamps_ms) % len(text_segments)
+                new_timestamps = []
+                current = 0
+                for i in range(len(text_segments)):
+                    count = ts_per_segment + (1 if i < remainder else 0)
+                    count = min(count, len(timestamps_ms) - current)
+                    start_ms = timestamps_ms[current][0]
+                    end_ms = timestamps_ms[current + count - 1][1]
+                    new_timestamps.append([start_ms, end_ms])
+                    current += count
+                timestamps_ms = new_timestamps
+            
+            # 生成字幕片段
+            for i in range(min(len(text_segments), len(timestamps_ms))):
+                start_ms, end_ms = timestamps_ms[i]
+                start_time = start_ms / 1000.0
+                end_time = end_ms / 1000.0
+                text = text_segments[i]
+                
+                if not text or start_time >= end_time:
+                    continue
+                
+                start_str = self.format_time(start_time)
+                end_str = self.format_time(end_time)
+                srt_content.extend([str(index), f"{start_str} --> {end_str}", text.strip(), ""])
+                index += 1
+            
+            if index == 1:
+                raise ValueError("未生成有效字幕片段")
+        
+        except Exception as e:
+            print(f"⚠️ 解析失败: {e}，启用兜底方案")
+            full_text = res[0].get("text", "").strip()
+            if full_text:
+                srt_content = ["1", "00:00:00,000 --> 00:30:00,000", full_text, ""]
+        
+        # 写入文件
+        with open(output_srt_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(srt_content))
+        print(f"✅ 字幕生成完成: {output_srt_path}")
+        print(f"📝 共生成 {max(index-1, 1)} 条字幕")
 
     def stop(self):
         self.is_running = False
