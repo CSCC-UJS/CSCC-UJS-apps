@@ -81,7 +81,8 @@ class MPVPlayerCore:
             for sub_id in self.injected_subtitle_ids:
                 try:
                     self.mpv_player.command("sub-remove", sub_id)
-                except:
+                except Exception:
+                    
                     pass
             self.injected_subtitle_ids.clear()
             # 清理所有临时字幕文件
@@ -318,10 +319,10 @@ class MPVPlayerCore:
             return
 
         new_pos = min(current_pos + increment, total_duration)
-    
-        if increment<5: self.set_position(new_pos+5)
-        else: self.set_position(new_pos)
-
+        if increment < 5:
+            self.set_position(new_pos + 5)
+        else:
+            self.set_position(new_pos)
     def fast_rewind(self):
         if not self.current_file:
             raise ValueError("未加载视频文件，无法快退")

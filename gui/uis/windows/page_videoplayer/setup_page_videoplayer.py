@@ -380,7 +380,7 @@ class SetupPageVideoPlayer(QObject):
             # 切换播放/暂停状态
             self.player_core.toggle_play_pause()
             # 更新按钮图标
-            if self.player_core.is_playing == True:
+            if self.player_core.is_playing:
                 self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("pause.svg"))
             else:
                 self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("resume.svg"))
@@ -396,7 +396,7 @@ class SetupPageVideoPlayer(QObject):
             if not hasattr(self.player_core, 'current_file') or not self.player_core.current_file:
                 raise ValueError("未加载任何视频/音频文件，请先选择文件！")
             self.player_core.fast_forward()
-            if self.player_core.is_playing == True:
+            if self.player_core.is_playing:
                 self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("resume.svg"))
             else:
                 self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("pause.svg"))  
@@ -412,7 +412,7 @@ class SetupPageVideoPlayer(QObject):
             if not hasattr(self.player_core, 'current_file') or not self.player_core.current_file:
                 raise ValueError("未加载任何视频/音频文件，请先选择文件！")
             self.player_core.fast_rewind()
-            if self.player_core.is_playing == True:
+            if self.player_core.is_playing:
                 self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("resume.svg"))
             else:
                 self.ui.load_pages.stop_btn.set_icon(Functions.set_svg_icon("pause.svg"))  

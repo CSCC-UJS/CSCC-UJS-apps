@@ -25,33 +25,12 @@ class Summary(QObject):
         # 存储文本摘要
         self.key_sentences: List[Dict[str, Any]] = [] 
 
-    # def swap(self) -> None:
-    #     """将字幕文件转换为文本文件"""
-    #     if not self.is_running:
-    #         raise RuntimeError("任务已被终止")
-            
-    #     self.progress.emit("正在转换字幕文件...", 10)
-    #     try:
-    #         sub = load(self.srt_path)
-    #         convert(sub, self.txt_path)
-    #         self.progress.emit("字幕转换完成", 20)
-    #     except Exception as e:
-    #         self.finished.emit(False, f"字幕转换失败: {str(e)}")
-    #         raise
-
     def abstract_sum(self) -> List[Dict[str, Any]]:
         """生成文本摘要，提取关键句子"""
         if not self.is_running:
             raise RuntimeError("任务已被终止")
             
         try:
-            # self.progress.emit("正在读取文本文件...", 30)
-            # # 安全读取文件
-            # with codecs.open(self.txt_path, 'r', 'utf-8') as f:
-            #     text = f.read()
-
-            # if not text.strip():
-            #     raise ValueError("转换后的文本文件为空")
 
             self.progress.emit("正在提取文本摘要...", 50)
             tr4s = TextRank4Sentence()
@@ -72,8 +51,6 @@ class Summary(QObject):
         self.is_running = True
         try:
             self.progress.emit("开始处理...", 0)
-            
-            #self.swap()
             
             self.abstract_sum()
             

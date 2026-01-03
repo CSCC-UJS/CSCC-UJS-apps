@@ -42,7 +42,7 @@ class SetupPageSettings(QObject):
         self.current_api_endpoint = ""
         self.current_api_key = ""
         self.current_model_name = ""
-        self.current_file_path=r"D:\video\small_test.mp3"
+        self.current_file_path=r""
 
     # SETUP PAGE_VIDEOPLAYER
     # ///////////////////////////////////////////////////////////////
@@ -266,7 +266,6 @@ class SetupPageSettings(QObject):
         self.current_api_endpoint=self.ui.load_pages.line_api_endpoint.text()
         self.current_api_key=self.ui.load_pages.line_api_key.text()
         self.current_model_name=self.ui.load_pages.line_model_name.text()
-        #self.current_file_path=self.ui.load_pages.line_file.text()
         self.update_api_config()
 
 

@@ -104,7 +104,7 @@ class ASRClient:
                 try:
                     error_detail = e.response.json()
                     error_msg += f" - {error_detail.get('message', error_detail)}"
-                except:
+                except (ValueError, KeyError):
                     error_msg += f" - {e.response.text}"
                 raise requests.RequestException(error_msg)
             except requests.exceptions.RequestException as e:

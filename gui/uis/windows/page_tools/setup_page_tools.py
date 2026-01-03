@@ -465,7 +465,7 @@ class SetupPageTools(QObject):
             start_sec = time_to_seconds(start)
             end_sec = time_to_seconds(end)
             return end_sec > start_sec
-        except:
+        except(ValueError, ZeroDivisionError):
             return False
 
     def complete_ms(self,time_str):

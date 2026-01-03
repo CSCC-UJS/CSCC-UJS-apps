@@ -1,13 +1,8 @@
+import jieba
 import logging
 import re
-import jieba
 import jieba.analyse as analyse
 from PySide6.QtCore import QObject, Signal
-
-jieba.setLogLevel(logging.CRITICAL)
-
-import logging
-import jieba
 
 jieba.setLogLevel(logging.CRITICAL)
 
