@@ -1,6 +1,6 @@
 # IMPORT PACKAGES AND MODULES
 # ///////////////////////////////////////////////////////////////
-
+import tempfile
 from gui.uis.windows.main_window.functions_main_window import *
 
 # IMPORT QT CORE
@@ -36,6 +36,13 @@ from gui.uis.windows.page_videoplayer.setup_page_videoplayer import SetupPageVid
 from gui.core.keyword_core import KeywordAbstract
 from gui.core.summary_core import Summary
 
+# IMPORT SUBTITLEWORKER CORE
+# ///////////////////////////////////////////////////////////////
+from gui.core.subtitle_core import SubtitleWorker,clean_temp
+
+# IMPORT FUNASR
+# ///////////////////////////////////////////////////////////////
+from funasr import AutoModel
 import os
 
 class SetupPageTools(QObject):
@@ -46,6 +53,11 @@ class SetupPageTools(QObject):
 
         self.keyword_num=1
         self.keysentence_num=1
+
+        self.video_not_playing_path=""
+
+
+        self.generate_subtitle_file=True
     # SETUP PAGE_TOOLS
     # ///////////////////////////////////////////////////////////////
     def setup_page_tools(self):
@@ -157,18 +169,6 @@ class SetupPageTools(QObject):
         self.table_sub.setHorizontalHeaderItem(1, self.column_time)
         self.table_sub.setHorizontalHeaderItem(2, self.column_content)
 
-        #test
-        # for x in range(10):
-        #     row_number = self.table_sub.rowCount()
-        #     self.table_sub.insertRow(row_number) # Insert row
-        #     self.table_sub.setItem(row_number, 0, QTableWidgetItem(str("Wanderson"))) # Add name
-        #     self.table_sub.setItem(row_number, 1, QTableWidgetItem(str("vfx_on_fire_" + str(x)))) # Add nick
-        #     self.pass_text = QTableWidgetItem()
-        #     self.pass_text.setTextAlignment(Qt.AlignCenter)
-        #     self.pass_text.setText("12345" + str(x))
-        #     self.table_sub.setItem(row_number, 2, self.pass_text) # Add pass
-        #     self.table_sub.setRowHeight(row_number, 40)
-
         self.ui.load_pages.layout_subtitle_table.addWidget(self.table_sub)
 
         self.ui.load_pages.btn_keyword.set_style(
@@ -199,7 +199,6 @@ class SetupPageTools(QObject):
         )
 
 
-
         self.ui.load_pages.comboBox_topK.set_stylesheet(
             radius = 8,
             border_size = 2,
@@ -224,7 +223,7 @@ class SetupPageTools(QObject):
         # ///////////////////////////////////////////////////////////////
         self.ui.load_pages.btn_file.clicked.connect(self.open_file)
         self.ui.load_pages.btn_save_sub.clicked.connect(self.save_subtitle)
-        #self.ui.load_pages.btn_start_sub.clicked.connect(self.video_class.start_subtitle_process)
+        self.ui.load_pages.btn_start_sub.clicked.connect(self.generate_subtitle_without_video)
         self.ui.load_pages.btn_keyword.clicked.connect(self.start_keyword_worker)
         self.ui.load_pages.btn_summary.clicked.connect(self.start_summary_worker)
 
@@ -265,16 +264,15 @@ class SetupPageTools(QObject):
             self.ui.load_pages.btn_keyword.setEnabled(False)
             self.ui.load_pages.btn_summary.setEnabled(False)
             self.ui.load_pages.btn_save_sub.setEnabled(False)
-            self.ui.load_pages.btn_start_sub.setEnabled(False)
+            self.ui.load_pages.btn_start_sub.setEnabled(True)
             self.table_sub.setEditTriggers(QAbstractItemView.NoEditTriggers)
         elif status==1:
-            pass
+            self.ui.load_pages.btn_start_sub.setEnabled(False)
         elif status==2:
             self.ui.load_pages.toggle_edit.setEnabled(True)
             self.ui.load_pages.btn_keyword.setEnabled(True)
             self.ui.load_pages.btn_summary.setEnabled(True)
             self.ui.load_pages.btn_save_sub.setEnabled(True)
-            self.ui.load_pages.btn_start_sub.setEnabled(True)
             self.table_sub.setEditTriggers(QAbstractItemView.AllEditTriggers)
             print(self.total_subtext)
 
@@ -330,12 +328,154 @@ class SetupPageTools(QObject):
             "视频文件 (*.mp4 *.avi *.mkv *.mov *.flv *.wmv);;音频文件 (*.mp3 *.wav *.flac *.aac);;所有文件 (*.*)"
         )
         if file_path and os.path.exists(file_path):
-            
+            self.video_not_playing_path=file_path
             self.ui.load_pages.line_file.setText(file_path)
             
     def save_subtitle(self):
-        pass
+        if self.sub_status != 2 or self.table_sub.rowCount() == 0:
+            QMessageBox.warning(
+                self.ui.load_pages.video_widget,
+                "保存错误",
+                "当前没有可保存的字幕数据！\n请先生成字幕。"
+            )
+            return
+        
+        default_path = ""
+        if self.video_not_playing_path:
+            default_path = os.path.splitext(self.video_not_playing_path)[0] + ".srt"
+        save_path, _ = QFileDialog.getSaveFileName(
+            self.ui.load_pages.video_widget,
+            "保存字幕文件",
+            default_path,
+            "字幕文件 (*.srt);;所有文件 (*.*)"
+        )
+        if not save_path:
+            return
 
+        try:
+            with open(save_path, 'w', encoding='utf-8') as f:
+                valid_subtitles = []
+                
+                for row in range(self.table_sub.rowCount()):
+                    index_item = self.table_sub.item(row, 0)
+                    time_item = self.table_sub.item(row, 1)
+                    content_item = self.table_sub.item(row, 2)
+                    if not all([index_item, time_item, content_item]):
+                        continue
+                    time_line = time_item.text().strip()
+                    content = content_item.text().strip()
+
+                    if not content:
+                        continue
+                    
+                    formatted_time = self.format_srt_time_line(time_line)
+                    if not self.validate_srt_time(formatted_time):
+                        QMessageBox.warning(
+                            self.ui.load_pages.video_widget,
+                            "格式警告",
+                            f"第{row+1}行时间格式无效，已跳过！\n原始时间：{time_line}"
+                        )
+                        continue
+                    
+                    valid_subtitles.append({
+                        "time": formatted_time,
+                        "content": content
+                    })
+                
+                for idx, sub in enumerate(valid_subtitles, 1):
+                    f.write(f"{idx}\n")
+                    f.write(f"{sub['time']}\n")
+                    clean_content = sub['content'].replace('\r\n', '\n').replace('\r', '\n')
+                    f.write(f"{clean_content}\n\n")
+                f.seek(f.tell() - 2, os.SEEK_SET)
+                f.truncate()
+
+            QMessageBox.information(
+                self.ui.load_pages.video_widget,
+                "保存成功",
+                f"字幕文件已成功保存到：\n{save_path}\n共保存 {len(valid_subtitles)} 条字幕"
+            )
+        except Exception as e:
+            QMessageBox.critical(
+                self.ui.load_pages.video_widget,
+                "保存失败",
+                f"字幕文件保存失败！\n错误信息：{str(e)}"
+            )
+
+    def format_srt_time_line(self, time_line):
+        if "-->" not in time_line:
+            return "00:00:00,000 --> 00:00:05,000"  # 无效时间默认值
+        
+        parts = time_line.split("-->")
+        if len(parts) != 2:
+            return "00:00:00,000 --> 00:00:05,000"
+        
+        start_time = parts[0].strip()
+        end_time = parts[1].strip()
+
+        start_time = self.normalize_srt_time(start_time)
+        end_time = self.normalize_srt_time(end_time)
+
+        return f"{start_time} --> {end_time}"
+
+    def normalize_srt_time(self, time_str):
+        time_str = time_str.replace(".", ",")
+        
+        if "," in time_str:
+            hms_part, ms_part = time_str.split(",", 1)
+            ms_part = ms_part.ljust(3, "0")[:3]
+        else:
+            hms_part = time_str
+            ms_part = "000"
+        time_parts = hms_part.split(":")
+        while len(time_parts) < 3:
+            time_parts.insert(0, "00")
+
+        time_parts = time_parts[-3:]
+
+        h = time_parts[0].zfill(2)
+        m = time_parts[1].zfill(2)
+        s = time_parts[2].zfill(2)
+        
+
+        return f"{h}:{m}:{s},{ms_part}"
+
+    def validate_srt_time(self, time_line):
+        """
+        验证时间轴是否符合SRT标准格式
+        """
+        if "-->" not in time_line:
+            return False
+        
+        start, end = time_line.split("-->")
+        start = start.strip()
+        end = end.strip()
+        
+        pattern = r"^\d{2}:\d{2}:\d{2},\d{3}$"
+        import re
+        if not re.match(pattern, start) or not re.match(pattern, end):
+            return False
+        
+        def time_to_seconds(time_str):
+            h, m, s_ms = time_str.split(":")
+            s, ms = s_ms.split(",")
+            return int(h)*3600 + int(m)*60 + int(s) + int(ms)/1000
+        
+        try:
+            start_sec = time_to_seconds(start)
+            end_sec = time_to_seconds(end)
+            return end_sec > start_sec
+        except:
+            return False
+
+    def complete_ms(self,time_str):
+        if "," not in time_str:
+                time_str += ",000"
+        else:
+            hms, ms = time_str.split(",")
+            ms = ms.ljust(3, "0")[:3]  
+            time_str = f"{hms},{ms}"
+        return time_str
 
     def set_table_column_widths(self):
             weights = [1, 3, 6]
@@ -471,6 +611,84 @@ class SetupPageTools(QObject):
             self.summary_thread.wait()
             self.summary_worker = None
             self.summary_thread = None
+
+
+# SUBTITLE FUNCTIONS WITHOUT VIDEO
+# ///////////////////////////////////////////////////////////////
+    def generate_subtitle_without_video(self):
+        video_dir = os.path.dirname(self.video_not_playing_path)
+        video_name = os.path.splitext(os.path.basename(self.video_not_playing_path))[0]
+
+        if self.generate_subtitle_file:
+            # 保存到视频同目录
+            self.temp_srt = os.path.join(video_dir, f"{video_name}.srt")
+        else:
+            # 生成临时字幕文件
+            temp_fd, temp_path = tempfile.mkstemp(suffix=".srt", prefix="temp_sub_")
+            os.close(temp_fd)
+            self.temp_srt = temp_path
+        self.model = AutoModel(
+            model="paraformer-zh",
+            vad_model="fsmn-vad",
+            punc_model="ct-punc",
+            isable_update=True,
+            device="cpu",
+            model_revision="v2.0.4"
+        )
+        # 2. 创建字幕生成线程
+        self.subtitle_worker = SubtitleWorker(
+            model=self.model,
+            player_core=None,
+            video_path=self.video_not_playing_path,
+            srt_path=self.temp_srt,
+            whether_play_video=False,
+            total_duration=None,
+            slice_duration=20,
+            short_segment_threshold=3.0
+        )
+        self.subtitle_thread = QThread()
+        self.subtitle_worker.moveToThread(self.subtitle_thread)
+        self.subtitle_worker.progress.connect(self.on_subtitle_progress)
+        self.subtitle_worker.finished.connect(self.on_subtitle_finished)
+        self.subtitle_thread.started.connect(self.subtitle_worker.run)
+        self.subtitle_worker.subtitle_updated.connect(self.update_subtitle_table)
+        # 启动线程
+        self.subtitle_thread.start()
+        self.update_sub_generate_status(1)
+        
+
+    def on_subtitle_progress(self, msg, progress):
+        #字幕生成进度回调
+        print(f"字幕生成进度：{progress}% - {msg}")  
+        self.subtitle_progress=progress
+        self.update_circular_progress(progress)
+
+    def on_subtitle_finished(self, success, msg):
+        #字幕生成完成回调
+        if success:
+            QMessageBox.information(self.ui.load_pages.video_widget, "成功", msg)
+        else:
+            QMessageBox.warning(self.ui.load_pages.video_widget, "失败", msg)
+        self.subtitle_thread.quit()
+        self.subtitle_thread.wait()
+        self.subtitle_worker = None
+        self.subtitle_thread = None
+        self.update_sub_generate_status(2)
+    
+    def stop_subtitle_worker(self):
+        if self.subtitle_worker and self.subtitle_thread:
+            self.subtitle_worker.stop()
+            self.subtitle_thread.quit()
+            self.subtitle_thread.wait()
+            self.subtitle_worker = None
+            self.subtitle_thread = None
+        
+        if self.temp_srt and not self.generate_subtitle_file and os.path.exists(self.temp_srt):
+            clean_temp([self.temp_srt])
+        self.temp_srt = None
+
+    
+
 
 
         

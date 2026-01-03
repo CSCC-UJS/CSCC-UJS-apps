@@ -10,7 +10,6 @@ from tqdm import tqdm
 from opencc import OpenCC
 from funasr import AutoModel
 
-# 清理临时文件工具函数
 def clean_temp(files):
     for file in files:
         if os.path.exists(file):
@@ -19,26 +18,29 @@ def clean_temp(files):
             except Exception as e:
                 print(f"警告：无法删除临时文件 {file}: {e}")
 
-# 分片识别的字幕生成线程
 class SubtitleWorker(QObject):
     progress = Signal(str, int)
     finished = Signal(bool, str)
-    subtitle_updated = Signal(int, float, float, str)  # 新增：实时更新单条字幕信号
+    subtitle_updated = Signal(int, float, float, str)  
 
-    def __init__(self, model,player_core, video_path, srt_path, total_duration, slice_duration=10, short_segment_threshold=2.0):
+    def __init__(self, model,player_core, video_path, srt_path, total_duration,whether_play_video=True, slice_duration=10, short_segment_threshold=2.0):
         super().__init__()
-        self.model = model  # 预加载的FunASR模型
-        self.player_core = player_core  # 传入的播放器核心对象
+        self.model = model  
+        self.player_core = player_core  
         self.video_path = video_path
-        self.srt_path = srt_path  # 修复原代码的元组问题（原代码多了个逗号）
+        self.srt_path = srt_path  
         self.total_duration = total_duration  # 视频总时长
-        self.slice_duration = slice_duration  # 音频切片时长（默认10秒）
-        self.short_segment_threshold = short_segment_threshold  # 短片段合并阈值（默认2秒）
+        self.slice_duration = slice_duration  # 音频切片时长
+        self.short_segment_threshold = short_segment_threshold  # 短片段合并阈值
+        self.whether_play_video=whether_play_video
         self.is_running = True
         self.converter = OpenCC('t2s')  # 繁转简
         self.subtitle_index = 1  # 字幕序号
         self.temp_files = []  # 临时音频文件缓存
         self.short_segments_cache = []  # 短片段缓存（用于合并）
+
+        if self.whether_play_video is False:
+            self.total_duration=self.get_video_duration(self.video_path)
 
     # 提取指定时间段的音频切片（复用原Whisper的ffmpeg逻辑，保证切片格式统一）
     def extract_audio_slice(self, start_time, duration, output_file):
@@ -91,7 +93,8 @@ class SubtitleWorker(QObject):
             f.write(f"{merged_text}\n\n")
         
         self.subtitle_updated.emit(self.subtitle_index,merged_start, merged_end, merged_text)
-        self.player_core.inject_mpv_subtitle(merged_start, merged_end, merged_text, 1)
+        if self.whether_play_video is True:
+            self.player_core.inject_mpv_subtitle(merged_start, merged_end, merged_text, 1)
         self.subtitle_index += 1
         self.short_segments_cache = []
 
@@ -244,7 +247,8 @@ class SubtitleWorker(QObject):
                                 f.write(f"{start_str} --> {end_str}\n")
                                 f.write(f"{seg['text']}\n\n")
                             self.subtitle_updated.emit(self.subtitle_index,seg["start"], seg["end"], seg["text"])
-                            self.player_core.inject_mpv_subtitle(seg["start"], seg["end"], seg["text"], 1)
+                            if self.whether_play_video is True:
+                                self.player_core.inject_mpv_subtitle(seg["start"], seg["end"], seg["text"], 1)
                             self.subtitle_index += 1
                             
 
@@ -273,6 +277,23 @@ class SubtitleWorker(QObject):
         finally:
             # 清理临时文件
             clean_temp(self.temp_files)
+
+    def get_video_duration(self, video_path):
+        if not os.path.exists(video_path):
+            return 0.0
+        try:
+            cmd = [
+                'ffprobe',
+                '-v', 'error',
+                '-show_entries', 'format=duration',
+                '-of', 'default=noprint_wrappers=1:nokey=1',
+                video_path
+            ]
+            output = subprocess.check_output(cmd, encoding='utf-8').strip()
+            return float(output) if output else 0.0
+        except Exception as e:
+            print(f"获取时长失败：{e}")
+            return 0.0
 
     # 停止线程
     def stop(self):
