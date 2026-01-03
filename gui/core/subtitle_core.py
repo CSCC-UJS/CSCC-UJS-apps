@@ -8,7 +8,6 @@ from datetime import timedelta
 import subprocess
 from tqdm import tqdm
 from opencc import OpenCC
-from funasr import AutoModel
 
 def clean_temp(files):
     for file in files:

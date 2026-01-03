@@ -1,4 +1,3 @@
-import codecs
 from typing import List, Dict, Any
 from textrank4zh import TextRank4Sentence
 from PySide6.QtCore import QObject, Signal

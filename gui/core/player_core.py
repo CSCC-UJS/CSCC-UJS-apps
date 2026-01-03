@@ -1,7 +1,5 @@
 import os
-import re
 import tempfile
-from datetime import timedelta
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.environ["PATH"] = script_dir + os.pathsep + os.environ["PATH"]
 import mpv
