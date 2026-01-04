@@ -68,7 +68,7 @@ class PyTitleBar(QWidget):
         context_color = "#6c99f4",
         text_foreground = "#8a95aa",
         radius = 8,
-        font_family = "Segoe UI",
+        font_family = "Noto Sans",
         title_size = 10,
         is_custom_title_bar = True,
     ):

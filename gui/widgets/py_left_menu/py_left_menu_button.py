@@ -342,7 +342,7 @@ class _ToolTip(QLabel):
         border-radius: 17px;
         border: 0px solid transparent;
         border-left: 3px solid {_context_color};
-        font: 800 9pt "Segoe UI";
+        font: 800 9pt "Noto Sans, Microsoft YaHei, SimSun, Arial, sans-serif";
     }}
     """
 
@@ -376,5 +376,3 @@ class _ToolTip(QLabel):
         self.shadow.setYOffset(0)
         self.shadow.setColor(QColor(0, 0, 0, 80))
         self.setGraphicsEffect(self.shadow)
-
-    

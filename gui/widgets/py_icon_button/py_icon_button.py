@@ -332,7 +332,7 @@ class _ToolTip(QLabel):
         padding-right: 10px;
         border-radius: 17px;
         border: 0px solid transparent;
-        font: 800 9pt "Segoe UI";
+        font: 800 9pt "Noto Sans, Microsoft YaHei, SimSun, Arial, sans-serif";
     }}
     """
     def __init__(

@@ -40,7 +40,7 @@ class PyWindow(QFrame):
         spacing = 2,
         bg_color = "#2c313c",
         text_color = "#fff",
-        text_font = "9pt 'Segoe UI'",
+        text_font = "9pt 'Noto Sans, Microsoft YaHei, SimSun, Arial, sans-serif'",
         border_radius = 10,
         border_size = 2,
         border_color = "#343b48",
@@ -139,4 +139,3 @@ class PyWindow(QFrame):
             _text_color = internal_text_color,
             _text_font = internal_text_font
         ))
-        

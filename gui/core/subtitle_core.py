@@ -3,11 +3,13 @@ import re
 import sys
 import time
 import tempfile
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Signal ,QThread
 from datetime import timedelta
 import subprocess
 from tqdm import tqdm
 from opencc import OpenCC
+from funasr import AutoModel
+from gui.core.platform_utils import is_windows, normalize_path, ensure_executable_exists
 
 def clean_temp(files):
     for file in files:
@@ -43,11 +45,15 @@ class SubtitleWorker(QObject):
 
     # 提取指定时间段的音频切片（复用原Whisper的ffmpeg逻辑，保证切片格式统一）
     def extract_audio_slice(self, start_time, duration, output_file):
+        # 检查FFmpeg是否可用
+        if not ensure_executable_exists('ffmpeg'):
+            raise Exception("FFmpeg未安装或不在PATH中，请先安装FFmpeg")
+        
         cmd = [
             'ffmpeg',
             '-y',  # 覆盖已存在的文件
             '-ss', f'{start_time:.2f}',  # 起始时间
-            '-i', self.video_path,  # 输入视频文件
+            '-i', normalize_path(self.video_path),  # 输入视频文件
             '-t', f'{duration:.2f}',  # 提取时长
             '-vn',  # 禁用视频流
             '-acodec', 'pcm_s16le',  # 音频编码
@@ -56,7 +62,7 @@ class SubtitleWorker(QObject):
             '-f', 'wav',  # 输出格式
             '-hide_banner',  # 隐藏banner信息
             '-loglevel', 'error',  # 仅输出错误信息
-            output_file  # 输出文件路径
+            normalize_path(output_file)  # 输出文件路径
         ]
 
         try:
@@ -281,12 +287,16 @@ class SubtitleWorker(QObject):
         if not os.path.exists(video_path):
             return 0.0
         try:
+            # 检查ffprobe是否可用
+            if not ensure_executable_exists('ffprobe'):
+                raise Exception("ffprobe未安装或不在PATH中，请先安装FFmpeg")
+            
             cmd = [
                 'ffprobe',
                 '-v', 'error',
                 '-show_entries', 'format=duration',
                 '-of', 'default=noprint_wrappers=1:nokey=1',
-                video_path
+                normalize_path(video_path)
             ]
             output = subprocess.check_output(cmd, encoding='utf-8').strip()
             return float(output) if output else 0.0
@@ -297,3 +307,23 @@ class SubtitleWorker(QObject):
     # 停止线程
     def stop(self):
         self.is_running = False
+
+
+class ModelLoadThread(QThread):
+    finished = Signal(object)  # 加载完成后传递model对象
+    error = Signal(str)       # 加载失败传递错误信息
+
+    def run(self):
+        try:
+            # 模型加载移到子线程，不阻塞UI
+            model = AutoModel(
+                model="paraformer-zh",
+                vad_model="fsmn-vad",
+                punc_model="ct-punc",
+                isable_update=True,
+                device="cpu",
+                model_revision="v2.0.4"
+            )
+            self.finished.emit(model)
+        except Exception as e:
+            self.error.emit(str(e))

@@ -1,0 +1,12 @@
+jieba==0.42.1
+OpenCC==1.1.9
+pyside6==6.10.1
+pyside6_addons==6.10.1
+pyside6_essentials==6.10.1
+python-mpv==1.0.8
+textrank4zh==0.3
+funasr==1.2.9
+# openEuler系统依赖（需要通过系统包管理器安装）：
+# - mpv (包含libmpv)
+# - ffmpeg
+# - ffprobe

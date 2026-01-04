@@ -34,13 +34,13 @@ class Ui_MainPages(object):
         self.page_home = QWidget()
         self.page_home.setObjectName(u"page_home")
         self.page_home.setStyleSheet(u"font-size: 14pt")
-        self.page_1_layout = QVBoxLayout(self.page_home)
-        self.page_1_layout.setSpacing(5)
-        self.page_1_layout.setObjectName(u"page_1_layout")
-        self.page_1_layout.setContentsMargins(5, 5, 5, 5)
+        self.horizontalLayout_21 = QHBoxLayout(self.page_home)
+        self.horizontalLayout_21.setSpacing(5)
+        self.horizontalLayout_21.setObjectName(u"horizontalLayout_21")
+        self.horizontalLayout_21.setContentsMargins(5, 5, 5, 5)
         self.welcome_base = QFrame(self.page_home)
         self.welcome_base.setObjectName(u"welcome_base")
-        self.welcome_base.setMinimumSize(QSize(300, 150))
+        self.welcome_base.setMinimumSize(QSize(400, 300))
         self.welcome_base.setMaximumSize(QSize(300, 150))
         self.welcome_base.setFrameShape(QFrame.Shape.NoFrame)
         self.welcome_base.setFrameShadow(QFrame.Shadow.Raised)
@@ -50,7 +50,7 @@ class Ui_MainPages(object):
         self.center_page_layout.setContentsMargins(0, 0, 0, 0)
         self.logo = QFrame(self.welcome_base)
         self.logo.setObjectName(u"logo")
-        self.logo.setMinimumSize(QSize(300, 120))
+        self.logo.setMinimumSize(QSize(400, 240))
         self.logo.setMaximumSize(QSize(300, 120))
         self.logo.setFrameShape(QFrame.Shape.NoFrame)
         self.logo.setFrameShadow(QFrame.Shadow.Raised)
@@ -59,7 +59,7 @@ class Ui_MainPages(object):
         self.logo_layout.setObjectName(u"logo_layout")
         self.logo_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.center_page_layout.addWidget(self.logo)
+        self.center_page_layout.addWidget(self.logo, 0, Qt.AlignmentFlag.AlignTop)
 
         self.label = QLabel(self.welcome_base)
         self.label.setObjectName(u"label")
@@ -68,78 +68,9 @@ class Ui_MainPages(object):
         self.center_page_layout.addWidget(self.label)
 
 
-        self.page_1_layout.addWidget(self.welcome_base, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.horizontalLayout_21.addWidget(self.welcome_base)
 
         self.pages.addWidget(self.page_home)
-        self.page_samples = QWidget()
-        self.page_samples.setObjectName(u"page_samples")
-        self.page_2_layout = QVBoxLayout(self.page_samples)
-        self.page_2_layout.setSpacing(5)
-        self.page_2_layout.setObjectName(u"page_2_layout")
-        self.page_2_layout.setContentsMargins(5, 5, 5, 5)
-        self.scroll_area = QScrollArea(self.page_samples)
-        self.scroll_area.setObjectName(u"scroll_area")
-        self.scroll_area.setStyleSheet(u"background: transparent;")
-        self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scroll_area.setWidgetResizable(True)
-        self.contents = QWidget()
-        self.contents.setObjectName(u"contents")
-        self.contents.setGeometry(QRect(0, 0, 233, 265))
-        self.contents.setStyleSheet(u"background: transparent;")
-        self.verticalLayout = QVBoxLayout(self.contents)
-        self.verticalLayout.setSpacing(15)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(5, 5, 5, 5)
-        self.title_label = QLabel(self.contents)
-        self.title_label.setObjectName(u"title_label")
-        self.title_label.setMaximumSize(QSize(16777215, 40))
-        font = QFont()
-        font.setPointSize(16)
-        self.title_label.setFont(font)
-        self.title_label.setStyleSheet(u"font-size: 16pt")
-        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.verticalLayout.addWidget(self.title_label)
-
-        self.description_label = QLabel(self.contents)
-        self.description_label.setObjectName(u"description_label")
-        self.description_label.setAlignment(Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignTop)
-        self.description_label.setWordWrap(True)
-
-        self.verticalLayout.addWidget(self.description_label)
-
-        self.row_1_layout = QHBoxLayout()
-        self.row_1_layout.setObjectName(u"row_1_layout")
-
-        self.verticalLayout.addLayout(self.row_1_layout)
-
-        self.row_2_layout = QHBoxLayout()
-        self.row_2_layout.setObjectName(u"row_2_layout")
-
-        self.verticalLayout.addLayout(self.row_2_layout)
-
-        self.row_3_layout = QHBoxLayout()
-        self.row_3_layout.setObjectName(u"row_3_layout")
-
-        self.verticalLayout.addLayout(self.row_3_layout)
-
-        self.row_4_layout = QVBoxLayout()
-        self.row_4_layout.setObjectName(u"row_4_layout")
-
-        self.verticalLayout.addLayout(self.row_4_layout)
-
-        self.row_5_layout = QVBoxLayout()
-        self.row_5_layout.setObjectName(u"row_5_layout")
-
-        self.verticalLayout.addLayout(self.row_5_layout)
-
-        self.scroll_area.setWidget(self.contents)
-
-        self.page_2_layout.addWidget(self.scroll_area)
-
-        self.pages.addWidget(self.page_samples)
         self.page_videoplayer = QWidget()
         self.page_videoplayer.setObjectName(u"page_videoplayer")
         self.page_videoplayer.setStyleSheet(u"QFrame {\n"
@@ -210,6 +141,21 @@ class Ui_MainPages(object):
 
         self.horizontalLayout_2.addWidget(self.progress_label)
 
+        self.comboBox_speed = PyComboBox(self.page_videoplayer)
+        self.comboBox_speed.addItem("")
+        self.comboBox_speed.addItem("")
+        self.comboBox_speed.addItem("")
+        self.comboBox_speed.addItem("")
+        self.comboBox_speed.addItem("")
+        self.comboBox_speed.addItem("")
+        self.comboBox_speed.setObjectName(u"comboBox_speed")
+        self.comboBox_speed.setMinimumSize(QSize(50, 40))
+        font = QFont()
+        font.setPointSize(14)
+        self.comboBox_speed.setFont(font)
+
+        self.horizontalLayout_2.addWidget(self.comboBox_speed)
+
         self.volume_btn = PyIconButton(self.page_videoplayer)
         self.volume_btn.setObjectName(u"volume_btn")
         self.volume_btn.setMinimumSize(QSize(40, 40))
@@ -217,7 +163,7 @@ class Ui_MainPages(object):
         self.horizontalLayout_2.addWidget(self.volume_btn)
 
         self.horizontalLayout_2.setStretch(0, 8)
-        self.horizontalLayout_2.setStretch(2, 1)
+        self.horizontalLayout_2.setStretch(3, 1)
 
         self.horizontalLayout_4.addLayout(self.horizontalLayout_2)
 
@@ -233,12 +179,18 @@ class Ui_MainPages(object):
         self.pages.addWidget(self.page_videoplayer)
         self.page_settings = QWidget()
         self.page_settings.setObjectName(u"page_settings")
-        self.verticalLayout_19 = QVBoxLayout(self.page_settings)
-        self.verticalLayout_19.setObjectName(u"verticalLayout_19")
-        self.groupBox_3 = QGroupBox(self.page_settings)
-        self.groupBox_3.setObjectName(u"groupBox_3")
-        self.groupBox_3.setStyleSheet(u"QGroupBox {\n"
-"    border: 2px solid rgb(255, 255, 255);\n"
+        self.verticalLayout_2 = QVBoxLayout(self.page_settings)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_9 = QVBoxLayout()
+        self.verticalLayout_9.setObjectName(u"verticalLayout_9")
+        self.verticalSpacer_2 = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_9.addItem(self.verticalSpacer_2)
+
+        self.groupBox_5 = QGroupBox(self.page_settings)
+        self.groupBox_5.setObjectName(u"groupBox_5")
+        self.groupBox_5.setStyleSheet(u"QGroupBox {\n"
+"    border: 2px solid rgb(130, 130, 130);\n"
 "    padding-top: 10px;\n"
 "    padding-left: 8px;\n"
 "    padding-right: 8px;\n"
@@ -246,271 +198,163 @@ class Ui_MainPages(object):
 "	font: 14pt \"JetBrains Mono\";\n"
 "    color: rgb(255, 255, 255);\n"
 "}")
-        self.verticalLayout_9 = QVBoxLayout(self.groupBox_3)
-        self.verticalLayout_9.setObjectName(u"verticalLayout_9")
-        self.groupBox = QGroupBox(self.groupBox_3)
-        self.groupBox.setObjectName(u"groupBox")
-        self.groupBox.setStyleSheet(u"QGroupBox {\n"
-"    border: 2px solid rgb(255, 255, 255);\n"
-"    padding-top: 10px;\n"
-"    padding-left: 8px;\n"
-"    padding-right: 8px;\n"
-"    padding-bottom: 8px;\n"
-"	font: 14pt \"JetBrains Mono\";\n"
-"    color: rgb(255, 255, 255);\n"
-"}\n"
-"")
-        self.verticalLayout_14 = QVBoxLayout(self.groupBox)
-        self.verticalLayout_14.setObjectName(u"verticalLayout_14")
-        self.verticalLayout_2 = QVBoxLayout()
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout = QVBoxLayout(self.groupBox_5)
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.label_2 = QLabel(self.groupBox)
-        self.label_2.setObjectName(u"label_2")
-        self.label_2.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
+        self.label_21 = QLabel(self.groupBox_5)
+        self.label_21.setObjectName(u"label_21")
+        self.label_21.setMaximumSize(QSize(250, 30))
+        self.label_21.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
 "color: rgb(255, 255, 255);")
 
-        self.horizontalLayout_5.addWidget(self.label_2)
+        self.horizontalLayout_5.addWidget(self.label_21)
 
-        self.horizontalSpacer = QSpacerItem(100, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_5.addItem(self.horizontalSpacer)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_5)
-
-        self.line_api_endpoint = PyLineEdit(self.groupBox)
-        self.line_api_endpoint.setObjectName(u"line_api_endpoint")
-        self.line_api_endpoint.setMinimumSize(QSize(80, 30))
-        font1 = QFont()
-        font1.setPointSize(12)
-        self.line_api_endpoint.setFont(font1)
-
-        self.verticalLayout_2.addWidget(self.line_api_endpoint)
-
-
-        self.verticalLayout_14.addLayout(self.verticalLayout_2)
-
-        self.verticalLayout_15 = QVBoxLayout()
-        self.verticalLayout_15.setObjectName(u"verticalLayout_15")
-        self.horizontalLayout_6 = QHBoxLayout()
-        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
-        self.label_4 = QLabel(self.groupBox)
-        self.label_4.setObjectName(u"label_4")
-        self.label_4.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
-"color: rgb(255, 255, 255);")
-
-        self.horizontalLayout_6.addWidget(self.label_4)
-
-        self.horizontalSpacer_2 = QSpacerItem(100, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_6.addItem(self.horizontalSpacer_2)
-
-
-        self.verticalLayout_15.addLayout(self.horizontalLayout_6)
-
-        self.line_api_key = PyLineEdit(self.groupBox)
-        self.line_api_key.setObjectName(u"line_api_key")
-        self.line_api_key.setMinimumSize(QSize(0, 30))
-        self.line_api_key.setFont(font1)
-
-        self.verticalLayout_15.addWidget(self.line_api_key)
-
-
-        self.verticalLayout_14.addLayout(self.verticalLayout_15)
-
-        self.verticalLayout_16 = QVBoxLayout()
-        self.verticalLayout_16.setObjectName(u"verticalLayout_16")
-        self.horizontalLayout_7 = QHBoxLayout()
-        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.label_5 = QLabel(self.groupBox)
-        self.label_5.setObjectName(u"label_5")
-        self.label_5.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
-"color: rgb(255, 255, 255);")
-
-        self.horizontalLayout_7.addWidget(self.label_5)
-
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_7.addItem(self.horizontalSpacer_3)
-
-
-        self.verticalLayout_16.addLayout(self.horizontalLayout_7)
-
-        self.line_model_name = PyLineEdit(self.groupBox)
-        self.line_model_name.setObjectName(u"line_model_name")
-        self.line_model_name.setMinimumSize(QSize(0, 30))
-        self.line_model_name.setFont(font1)
-
-        self.verticalLayout_16.addWidget(self.line_model_name)
-
-
-        self.verticalLayout_14.addLayout(self.verticalLayout_16)
-
-        self.horizontalLayout_8 = QHBoxLayout()
-        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
-        self.label_8 = QLabel(self.groupBox)
-        self.label_8.setObjectName(u"label_8")
-        self.label_8.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
-"color: rgb(255, 255, 255);")
-
-        self.horizontalLayout_8.addWidget(self.label_8)
-
-        self.toggle_local_remote = PyToggle(self.groupBox)
-        self.toggle_local_remote.setObjectName(u"toggle_local_remote")
-
-        self.horizontalLayout_8.addWidget(self.toggle_local_remote)
-
-        self.horizontalSpacer_4 = QSpacerItem(200, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_8.addItem(self.horizontalSpacer_4)
-
-
-        self.verticalLayout_14.addLayout(self.horizontalLayout_8)
-
-        self.horizontalLayout_11 = QHBoxLayout()
-        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
-        self.btn_apply = PyPushButton(self.groupBox)
-        self.btn_apply.setObjectName(u"btn_apply")
-        self.btn_apply.setMinimumSize(QSize(0, 30))
-
-        self.horizontalLayout_11.addWidget(self.btn_apply)
-
-        self.btn_check = PyPushButton(self.groupBox)
-        self.btn_check.setObjectName(u"btn_check")
-        self.btn_check.setMinimumSize(QSize(0, 30))
-
-        self.horizontalLayout_11.addWidget(self.btn_check)
-
-        self.label_status = QLabel(self.groupBox)
-        self.label_status.setObjectName(u"label_status")
-        self.label_status.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
-"color: rgb(255, 255, 255);")
-
-        self.horizontalLayout_11.addWidget(self.label_status)
-
-        self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_11.addItem(self.horizontalSpacer_5)
-
-
-        self.verticalLayout_14.addLayout(self.horizontalLayout_11)
-
-
-        self.verticalLayout_9.addWidget(self.groupBox)
-
-        self.groupBox_2 = QGroupBox(self.groupBox_3)
-        self.groupBox_2.setObjectName(u"groupBox_2")
-        self.groupBox_2.setStyleSheet(u"QGroupBox {\n"
-"    border: 2px solid rgb(255, 255, 255);\n"
-"    padding-top: 10px;\n"
-"    padding-left: 8px;\n"
-"    padding-right: 8px;\n"
-"    padding-bottom: 8px;\n"
-"	font: 14pt \"JetBrains Mono\";\n"
-"    color: rgb(255, 255, 255);\n"
-"}")
-        self.verticalLayout_17 = QVBoxLayout(self.groupBox_2)
-        self.verticalLayout_17.setObjectName(u"verticalLayout_17")
-        self.horizontalLayout_16 = QHBoxLayout()
-        self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
-        self.label_12 = QLabel(self.groupBox_2)
-        self.label_12.setObjectName(u"label_12")
-        self.label_12.setMaximumSize(QSize(250, 30))
-        self.label_12.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
-"color: rgb(255, 255, 255);")
-
-        self.horizontalLayout_16.addWidget(self.label_12)
-
-        self.comboBox_sub_model = PyComboBox(self.groupBox_2)
-        self.comboBox_sub_model.addItem("")
+        self.comboBox_sub_model = PyComboBox(self.groupBox_5)
         self.comboBox_sub_model.addItem("")
         self.comboBox_sub_model.addItem("")
         self.comboBox_sub_model.setObjectName(u"comboBox_sub_model")
         self.comboBox_sub_model.setMinimumSize(QSize(0, 30))
-        font2 = QFont()
-        font2.setPointSize(14)
-        self.comboBox_sub_model.setFont(font2)
+        self.comboBox_sub_model.setFont(font)
 
-        self.horizontalLayout_16.addWidget(self.comboBox_sub_model)
+        self.horizontalLayout_5.addWidget(self.comboBox_sub_model)
 
-        self.horizontalSpacer_7 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer_23 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout_16.addItem(self.horizontalSpacer_7)
+        self.horizontalLayout_5.addItem(self.horizontalSpacer_23)
 
 
-        self.verticalLayout_17.addLayout(self.horizontalLayout_16)
+        self.verticalLayout.addLayout(self.horizontalLayout_5)
+
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.label_22 = QLabel(self.groupBox_5)
+        self.label_22.setObjectName(u"label_22")
+        self.label_22.setMaximumSize(QSize(250, 30))
+        self.label_22.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
+"color: rgb(255, 255, 255);")
+
+        self.horizontalLayout_6.addWidget(self.label_22)
+
+        self.toggle_save_subtitles = PyToggle(self.groupBox_5)
+        self.toggle_save_subtitles.setObjectName(u"toggle_save_subtitles")
+
+        self.horizontalLayout_6.addWidget(self.toggle_save_subtitles)
+
+        self.horizontalSpacer_24 = QSpacerItem(200, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_6.addItem(self.horizontalSpacer_24)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_6)
+
+        self.horizontalLayout_7 = QHBoxLayout()
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.label_24 = QLabel(self.groupBox_5)
+        self.label_24.setObjectName(u"label_24")
+        self.label_24.setMaximumSize(QSize(250, 30))
+        self.label_24.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
+"color: rgb(255, 255, 255);")
+
+        self.horizontalLayout_7.addWidget(self.label_24)
+
+        self.comboBox_sub_place = PyComboBox(self.groupBox_5)
+        self.comboBox_sub_place.addItem("")
+        self.comboBox_sub_place.addItem("")
+        self.comboBox_sub_place.setObjectName(u"comboBox_sub_place")
+        self.comboBox_sub_place.setMinimumSize(QSize(100, 30))
+        self.comboBox_sub_place.setFont(font)
+
+        self.horizontalLayout_7.addWidget(self.comboBox_sub_place)
+
+        self.horizontalSpacer_26 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_7.addItem(self.horizontalSpacer_26)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_7)
+
+        self.horizontalLayout_8 = QHBoxLayout()
+        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
+        self.label_25 = QLabel(self.groupBox_5)
+        self.label_25.setObjectName(u"label_25")
+        self.label_25.setMaximumSize(QSize(250, 30))
+        self.label_25.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
+"color: rgb(255, 255, 255);")
+
+        self.horizontalLayout_8.addWidget(self.label_25)
+
+        self.btn_sub_colour = PyPushButton(self.groupBox_5)
+        self.btn_sub_colour.setObjectName(u"btn_sub_colour")
+        self.btn_sub_colour.setMinimumSize(QSize(100, 40))
+
+        self.horizontalLayout_8.addWidget(self.btn_sub_colour)
+
+        self.horizontalSpacer_27 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_8.addItem(self.horizontalSpacer_27)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_8)
+
+        self.horizontalLayout_11 = QHBoxLayout()
+        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        self.label_26 = QLabel(self.groupBox_5)
+        self.label_26.setObjectName(u"label_26")
+        self.label_26.setMaximumSize(QSize(250, 30))
+        self.label_26.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
+"color: rgb(255, 255, 255);")
+
+        self.horizontalLayout_11.addWidget(self.label_26)
+
+        self.comboBox_font_size = PyComboBox(self.groupBox_5)
+        self.comboBox_font_size.addItem("")
+        self.comboBox_font_size.addItem("")
+        self.comboBox_font_size.addItem("")
+        self.comboBox_font_size.addItem("")
+        self.comboBox_font_size.addItem("")
+        self.comboBox_font_size.addItem("")
+        self.comboBox_font_size.setObjectName(u"comboBox_font_size")
+        self.comboBox_font_size.setMinimumSize(QSize(0, 30))
+        self.comboBox_font_size.setFont(font)
+
+        self.horizontalLayout_11.addWidget(self.comboBox_font_size)
+
+        self.horizontalSpacer_28 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_11.addItem(self.horizontalSpacer_28)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_11)
 
         self.horizontalLayout_17 = QHBoxLayout()
         self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
-        self.label_13 = QLabel(self.groupBox_2)
-        self.label_13.setObjectName(u"label_13")
-        self.label_13.setMaximumSize(QSize(250, 30))
-        self.label_13.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
-"color: rgb(255, 255, 255);")
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout_17.addWidget(self.label_13)
+        self.horizontalLayout_17.addItem(self.horizontalSpacer)
 
-        self.toggle_save_subtitles = PyToggle(self.groupBox_2)
-        self.toggle_save_subtitles.setObjectName(u"toggle_save_subtitles")
+        self.btn_apply_setting = PyPushButton(self.groupBox_5)
+        self.btn_apply_setting.setObjectName(u"btn_apply_setting")
+        self.btn_apply_setting.setMinimumSize(QSize(100, 40))
+        font1 = QFont()
+        font1.setPointSize(12)
+        self.btn_apply_setting.setFont(font1)
 
-        self.horizontalLayout_17.addWidget(self.toggle_save_subtitles)
-
-        self.horizontalSpacer_8 = QSpacerItem(200, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_17.addItem(self.horizontalSpacer_8)
+        self.horizontalLayout_17.addWidget(self.btn_apply_setting)
 
 
-        self.verticalLayout_17.addLayout(self.horizontalLayout_17)
+        self.verticalLayout.addLayout(self.horizontalLayout_17)
 
 
-        self.verticalLayout_9.addWidget(self.groupBox_2)
+        self.verticalLayout_9.addWidget(self.groupBox_5)
 
-        self.groupBox_4 = QGroupBox(self.groupBox_3)
-        self.groupBox_4.setObjectName(u"groupBox_4")
-        self.groupBox_4.setStyleSheet(u"QGroupBox {\n"
-"    border: 2px solid rgb(255, 255, 255);\n"
-"    padding-top: 10px;\n"
-"    padding-left: 8px;\n"
-"    padding-right: 8px;\n"
-"    padding-bottom: 8px;\n"
-"	font: 14pt \"JetBrains Mono\";\n"
-"    color: rgb(255, 255, 255);\n"
-"}")
-        self.verticalLayout_18 = QVBoxLayout(self.groupBox_4)
-        self.verticalLayout_18.setObjectName(u"verticalLayout_18")
-        self.horizontalLayout_18 = QHBoxLayout()
-        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
-        self.label_14 = QLabel(self.groupBox_4)
-        self.label_14.setObjectName(u"label_14")
-        self.label_14.setMaximumSize(QSize(250, 30))
-        self.label_14.setStyleSheet(u"font: 14pt \"JetBrains Mono\";\n"
-"color: rgb(255, 255, 255);")
+        self.verticalLayout_9.setStretch(1, 3)
 
-        self.horizontalLayout_18.addWidget(self.label_14)
+        self.verticalLayout_2.addLayout(self.verticalLayout_9)
 
-        self.comboBox_themes = PyComboBox(self.groupBox_4)
-        self.comboBox_themes.addItem("")
-        self.comboBox_themes.addItem("")
-        self.comboBox_themes.setObjectName(u"comboBox_themes")
-        self.comboBox_themes.setMinimumSize(QSize(0, 30))
-        self.comboBox_themes.setFont(font2)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.horizontalLayout_18.addWidget(self.comboBox_themes)
-
-        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_18.addItem(self.horizontalSpacer_9)
-
-
-        self.verticalLayout_18.addLayout(self.horizontalLayout_18)
-
-
-        self.verticalLayout_9.addWidget(self.groupBox_4)
-
-
-        self.verticalLayout_19.addWidget(self.groupBox_3)
+        self.verticalLayout_2.addItem(self.verticalSpacer)
 
         self.pages.addWidget(self.page_settings)
         self.page_tools = QWidget()
@@ -830,7 +674,7 @@ class Ui_MainPages(object):
 
         self.retranslateUi(MainPages)
 
-        self.pages.setCurrentIndex(4)
+        self.pages.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainPages)
@@ -839,40 +683,40 @@ class Ui_MainPages(object):
     def retranslateUi(self, MainPages):
         MainPages.setWindowTitle(QCoreApplication.translate("MainPages", u"Form", None))
         self.label.setText(QCoreApplication.translate("MainPages", u"CSCC-UJS-Apps", None))
-        self.title_label.setText(QCoreApplication.translate("MainPages", u"Custom Widgets Page", None))
-        self.description_label.setText(QCoreApplication.translate("MainPages", u"Here will be all the custom widgets, they will be added over time on this page.\n"
-"I will try to always record a new tutorial when adding a new Widget and updating the project on Patreon before launching on GitHub and GitHub after the public release.", None))
         self.prev_btn.setText("")
         self.stop_btn.setText("")
         self.next_btn.setText("")
         self.progress_label.setText(QCoreApplication.translate("MainPages", u"00:00", None))
+        self.comboBox_speed.setItemText(0, QCoreApplication.translate("MainPages", u"\u500d\u901f\uff1a0.5x", None))
+        self.comboBox_speed.setItemText(1, QCoreApplication.translate("MainPages", u"\u500d\u901f\uff1a0.75x", None))
+        self.comboBox_speed.setItemText(2, QCoreApplication.translate("MainPages", u"\u500d\u901f\uff1a1x", None))
+        self.comboBox_speed.setItemText(3, QCoreApplication.translate("MainPages", u"\u500d\u901f\uff1a1.25x", None))
+        self.comboBox_speed.setItemText(4, QCoreApplication.translate("MainPages", u"\u500d\u901f\uff1a1.5x", None))
+        self.comboBox_speed.setItemText(5, QCoreApplication.translate("MainPages", u"\u500d\u901f\uff1a2x", None))
+
         self.volume_btn.setText("")
-        self.groupBox_3.setTitle(QCoreApplication.translate("MainPages", u"\u8bbe\u7f6e", None))
-        self.groupBox.setTitle(QCoreApplication.translate("MainPages", u"api\u8bbe\u7f6e", None))
-        self.label_2.setText(QCoreApplication.translate("MainPages", u"ASR API ENDPOINT", None))
-        self.line_api_endpoint.setText(QCoreApplication.translate("MainPages", u"https://api.siliconflow.cn/v1/audio/transcriptions", None))
-        self.label_4.setText(QCoreApplication.translate("MainPages", u"API KEY", None))
-        self.line_api_key.setText(QCoreApplication.translate("MainPages", u"sk-", None))
-        self.label_5.setText(QCoreApplication.translate("MainPages", u"MODEL NAME", None))
-        self.line_model_name.setText(QCoreApplication.translate("MainPages", u"TeleAI/TeleSpeechASR", None))
-        self.label_8.setText(QCoreApplication.translate("MainPages", u"REMOTE/LOCAL", None))
-        self.toggle_local_remote.setText("")
-        self.btn_apply.setText(QCoreApplication.translate("MainPages", u"\u5e94\u7528API", None))
-        self.btn_check.setText(QCoreApplication.translate("MainPages", u"\u68c0\u6d4b\u8fde\u901a\u6027", None))
-        self.label_status.setText(QCoreApplication.translate("MainPages", u"UNKOWN", None))
-        self.groupBox_2.setTitle(QCoreApplication.translate("MainPages", u"\u5b57\u5e55\u8bbe\u7f6e", None))
-        self.label_12.setText(QCoreApplication.translate("MainPages", u"\u5b57\u5e55\u751f\u6210\u6a21\u578b", None))
-        self.comboBox_sub_model.setItemText(0, QCoreApplication.translate("MainPages", u"funasr", None))
-        self.comboBox_sub_model.setItemText(1, QCoreApplication.translate("MainPages", u"whisper", None))
-        self.comboBox_sub_model.setItemText(2, QCoreApplication.translate("MainPages", u"api", None))
+        self.groupBox_5.setTitle(QCoreApplication.translate("MainPages", u"\u5b57\u5e55\u8bbe\u7f6e", None))
+        self.label_21.setText(QCoreApplication.translate("MainPages", u"\u5b57\u5e55\u751f\u6210\u6a21\u578b    ", None))
+        self.comboBox_sub_model.setItemText(0, QCoreApplication.translate("MainPages", u"funasr(\u63a8\u8350\uff09", None))
+        self.comboBox_sub_model.setItemText(1, QCoreApplication.translate("MainPages", u"funasr(\u8f83\u6162\uff09", None))
 
-        self.label_13.setText(QCoreApplication.translate("MainPages", u"\u662f\u5426\u751f\u6210\u5b57\u5e55\u6587\u4ef6", None))
+        self.label_22.setText(QCoreApplication.translate("MainPages", u"\u662f\u5426\u751f\u6210\u5b57\u5e55\u6587\u4ef6", None))
         self.toggle_save_subtitles.setText("")
-        self.groupBox_4.setTitle(QCoreApplication.translate("MainPages", u"\u4e3b\u9898", None))
-        self.label_14.setText(QCoreApplication.translate("MainPages", u"\u5e94\u7528\u4e3b\u9898", None))
-        self.comboBox_themes.setItemText(0, QCoreApplication.translate("MainPages", u"dark", None))
-        self.comboBox_themes.setItemText(1, QCoreApplication.translate("MainPages", u"lignt", None))
+        self.label_24.setText(QCoreApplication.translate("MainPages", u"\u5b57\u5e55\u663e\u793a\u4f4d\u7f6e    ", None))
+        self.comboBox_sub_place.setItemText(0, QCoreApplication.translate("MainPages", u"\u5e95\u90e8", None))
+        self.comboBox_sub_place.setItemText(1, QCoreApplication.translate("MainPages", u"\u9876\u90e8", None))
 
+        self.label_25.setText(QCoreApplication.translate("MainPages", u"\u5b57\u5e55\u989c\u8272       ", None))
+        self.btn_sub_colour.setText("")
+        self.label_26.setText(QCoreApplication.translate("MainPages", u"\u5b57\u5e55\u5b57\u4f53\u5927\u5c0f    ", None))
+        self.comboBox_font_size.setItemText(0, QCoreApplication.translate("MainPages", u"10", None))
+        self.comboBox_font_size.setItemText(1, QCoreApplication.translate("MainPages", u"12", None))
+        self.comboBox_font_size.setItemText(2, QCoreApplication.translate("MainPages", u"14", None))
+        self.comboBox_font_size.setItemText(3, QCoreApplication.translate("MainPages", u"16", None))
+        self.comboBox_font_size.setItemText(4, QCoreApplication.translate("MainPages", u"18", None))
+        self.comboBox_font_size.setItemText(5, QCoreApplication.translate("MainPages", u"20", None))
+
+        self.btn_apply_setting.setText(QCoreApplication.translate("MainPages", u"\u5e94\u7528\u8bbe\u7f6e", None))
         self.label_7.setText(QCoreApplication.translate("MainPages", u"\u89c6\u9891\u6587\u4ef6\u8def\u5f84", None))
         self.line_file.setText(QCoreApplication.translate("MainPages", u"\u5f53\u524d\u6587\u4ef6\u8def\u5f84", None))
         self.btn_file.setText(QCoreApplication.translate("MainPages", u"\u6d4f\u89c8...", None))
@@ -909,4 +753,3 @@ class Ui_MainPages(object):
 
         self.btn_summary.setText(QCoreApplication.translate("MainPages", u"\u63d0\u53d6\u6458\u8981", None))
     # retranslateUi
-

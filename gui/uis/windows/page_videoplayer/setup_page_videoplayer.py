@@ -26,6 +26,10 @@ from gui.widgets import *
 # ///////////////////////////////////////////////////////////////
 from gui.uis.windows.main_window.ui_main import *
 
+# LOAD SUBTITLE SETTINGS
+# ///////////////////////////////////////////////////////////////
+from gui.uis.windows.page_settings.setup_page_settings import SetupPageSettings
+
 # MAIN FUNCTIONS 
 # ///////////////////////////////////////////////////////////////
 from gui.uis.windows.main_window.functions_main_window import *
@@ -36,11 +40,13 @@ from gui.core.player_core import MPVPlayerCore
 
 # IMPORT SUBTITLEWORKER CORE
 # ///////////////////////////////////////////////////////////////
-from gui.core.subtitle_core import SubtitleWorker,clean_temp
+from gui.core.subtitle_core import SubtitleWorker,ModelLoadThread,clean_temp
 
-# IMPORT FUNASR
+# IMPORT PLATFORM UTILS
 # ///////////////////////////////////////////////////////////////
-from funasr import AutoModel
+from gui.core.platform_utils import is_windows, is_openeuler
+
+
 
 class SetupPageVideoPlayer(QObject):
     video_path_updated=Signal(str)
@@ -51,6 +57,7 @@ class SetupPageVideoPlayer(QObject):
         super().__init__()
         # PLAYER SETTINGS
         # ///////////////////////////////////////////////////////////////
+        self.settings=None
         self.ui=None
         self.player_core=None
         self.is_dragging_progress=False
@@ -101,6 +108,17 @@ class SetupPageVideoPlayer(QObject):
             self.themes["app_color"]["dark_three"],
             self.themes["app_color"]["context_color"])
         self.ui.load_pages.stop_btn.repaint()
+        self.ui.load_pages.comboBox_speed.set_stylesheet(
+            radius = 8,
+            border_size = 2,
+            color = self.themes["app_color"]["text_foreground"],
+            selection_color = self.themes["app_color"]["white"],
+            bg_color = self.themes["app_color"]["dark_one"],
+            bg_color_active = self.themes["app_color"]["dark_three"],
+            context_color = self.themes["app_color"]["context_color"]
+        )
+        self.ui.load_pages.comboBox_speed.setCurrentIndex(2)  
+
         self.ui.load_pages.volume_btn.set_icon(Functions.set_svg_icon("sound_on.svg"))
         self.ui.load_pages.volume_btn.set_background_colors(self.themes["app_color"]["dark_one"],
             self.themes["app_color"]["dark_three"],
@@ -111,6 +129,7 @@ class SetupPageVideoPlayer(QObject):
         self.ui.load_pages.progressbar.setValue(0)
 
         self.player_core=MPVPlayerCore()
+        self.ui.load_pages.video_widget.show()  # 确保widget已显示
         self.player_core.bind_to_window(self.ui.load_pages.video_widget.winId())
         self.ui.load_pages.video_widget.setToolTip("点击选择视频/音频文件播放")
         
@@ -173,6 +192,7 @@ class SetupPageVideoPlayer(QObject):
         """)
         self.volume_container.hide()     
 
+        self.model_load_dialog=None
 
         self.setup_subtitle_menu()
         # SET CONNECTS
@@ -184,6 +204,8 @@ class SetupPageVideoPlayer(QObject):
 
         # SET CONNECTS
         # ///////////////////////////////////////////////////////////////
+        self.ui.load_pages.comboBox_speed.currentIndexChanged.connect(self.set_play_speed)
+
         self.volume_slider.valueChanged.connect(self.on_volume_changed)
         self.ui.load_pages.volume_btn.clicked.connect(self.toggle_volume_slider)
         
@@ -197,6 +219,7 @@ class SetupPageVideoPlayer(QObject):
 
         self.player_core.set_progress_callback(self.update_progress_ui)
         self.is_dragging_progress = False
+
 
 
     # EVENT FILTER
@@ -361,6 +384,8 @@ class SetupPageVideoPlayer(QObject):
 
             self.video_path_updated.emit(file_path)
             self.sub_generate_status_changed.emit(0)
+            self.set_subtitle_colour_and_size()
+            self.set_subtitle_place()
 
     def handle_video_widget_right_click(self,global_pos):
         self.show_subtitle_menu(global_pos)
@@ -422,7 +447,17 @@ class SetupPageVideoPlayer(QObject):
             QMessageBox.warning(self.ui.load_pages.video_widget, "提示", str(e))
         except Exception as e:
             QMessageBox.warning(self.ui.load_pages.video_widget, "错误", f"快退失败：{str(e)}")
-    
+    def set_play_speed(self,index):
+        speed_map = {
+            0: 0.5,
+            1: 0.75,
+            2: 1.0,
+            3: 1.25,
+            4: 1.5,
+            5: 2.0
+        }
+        speed = speed_map.get(index, 1.0)
+        self.player_core.set_play_speed(speed)
     # SUBTITLE FUNCTIONS
     # ///////////////////////////////////////////////////////////////
     def start_subtitle_worker(self, video_path):
@@ -430,41 +465,44 @@ class SetupPageVideoPlayer(QObject):
         video_name = os.path.splitext(os.path.basename(video_path))[0]
 
         if self.generate_subtitle_file:
-            # 保存到视频同目录
             self.temp_srt = os.path.join(video_dir, f"{video_name}.srt")
         else:
-            # 生成临时字幕文件
             temp_fd, temp_path = tempfile.mkstemp(suffix=".srt", prefix="temp_sub_")
             os.close(temp_fd)
             self.temp_srt = temp_path
-        QMessageBox.information(self.ui.load_pages.video_widget, "提示", "开始生成字幕，请稍候...\n生成过程中可正常播放视频")
-        self.model = AutoModel(
-            model="paraformer-zh",
-            vad_model="fsmn-vad",
-            punc_model="ct-punc",
-            isable_update=True,
-            device="cpu",
-            model_revision="v2.0.4"
-        )
-        # 2. 创建字幕生成线程
+
+        self.model_load_thread = ModelLoadThread()
+        self.model_load_thread.finished.connect(self.on_model_loaded)
+        self.model_load_thread.error.connect(self.on_model_load_error)
+        self.model_load_thread.start()
+        QApplication.processEvents()
+
+    # 模型加载完成回调
+    def on_model_loaded(self, model):
+        self.model = model
+
         self.subtitle_worker = SubtitleWorker(
             model=self.model,
             player_core=self.player_core,
-            video_path=video_path,
+            video_path=self.video_file_path,
             srt_path=self.temp_srt,
             total_duration=self.total_duration,
             slice_duration=20,
             short_segment_threshold=3.0
         )
+        # ... 后续字幕线程逻辑保持不变 ...
         self.subtitle_thread = QThread()
         self.subtitle_worker.moveToThread(self.subtitle_thread)
         self.subtitle_worker.progress.connect(self.on_subtitle_progress)
         self.subtitle_worker.finished.connect(self.on_subtitle_finished)
         self.subtitle_thread.started.connect(self.subtitle_worker.run)
         self.subtitle_worker.subtitle_updated.connect(self.subtitle_sentence_updated.emit)
-        # 启动线程
         self.subtitle_thread.start()
-        self.sub_generate_status_changed.emit(1) 
+        self.sub_generate_status_changed.emit(1)
+
+    # 模型加载失败回调
+    def on_model_load_error(self, error_msg):
+        QMessageBox.critical(self.ui.load_pages.video_widget, "模型加载失败", error_msg)        
         
 
     def on_subtitle_progress(self, msg, progress):
@@ -598,3 +636,57 @@ class SetupPageVideoPlayer(QObject):
             #print("self.subtitle_on=False")
     def on_generate_subtitle(self):
         self.start_subtitle_worker(self.video_file_path)
+
+    # SETTINGS FUNCTIONS
+    # ///////////////////////////////////////////////////////////////
+    def bind_settings_class(self,settings_setup:SetupPageSettings):
+        self.settings=settings_setup
+        self.settings.settings_update.connect(self.set_subtitle_settings)
+
+    def set_subtitle_settings(self,generate_file:bool,font_size:int,sub_place:str,sub_colour:str):
+        self.generate_subtitle_file=generate_file
+        self.subtitle_font_size=font_size
+        self.subtitle_place=sub_place
+        self.subtitle_colour=sub_colour
+        self.set_subtitle_colour_and_size()
+        self.set_subtitle_place()
+
+    def set_subtitle_place(self):
+        if not (self.player_core and self.player_core.mpv_player):
+            return
+        
+        # ASS 样式位置映射（兼容所有MPV版本）
+        align_map = {
+            "顶部": 2,    # 顶部居中
+            "底部": 9,    # 底部居中（默认）
+            "居中": 5     # 垂直居中
+        }
+        # 获取当前选择的位置对应的ASS对齐值
+        ass_alignment = align_map.get(self.subtitle_place, 9)
+        
+        try:
+            # 方案：通过 ASS 样式强制设置位置（优先级最高，不受MPV版本影响）
+            # 先获取当前已有的样式（避免覆盖其他设置）
+            current_style = self.player_core.mpv_player.sub_style or ""
+            # 移除旧的 Alignment 配置（防止重复设置）
+            new_style_parts = []
+            for part in current_style.split(";"):
+                part = part.strip()
+                if not part.startswith("Alignment="):
+                    new_style_parts.append(part)
+            # 添加新的 Alignment 配置
+            new_style_parts.append(f"Alignment={ass_alignment}")
+            # 重新组合样式并设置
+            final_style = "; ".join(filter(None, new_style_parts))
+            self.player_core.mpv_player.sub_style = final_style
+            print(f"ASS样式设置字幕位置成功：Alignment={ass_alignment}")
+        except Exception as e:
+            # 极端情况下的错误提示（几乎不会触发）
+            print(f"ASS样式设置字幕位置失败: {e}")
+            QMessageBox.warning(self.ui.load_pages.video_widget, "字幕位置设置失败", 
+                            f"无法设置字幕位置，请检查MPV版本或重启播放器：{str(e)}")
+        
+    def set_subtitle_colour_and_size(self):
+        if self.player_core and self.player_core.mpv_player:
+            style=f"font-size={self.subtitle_font_size}px; primary-color={self.subtitle_colour};"
+            self.player_core.mpv_player.sub_style = style

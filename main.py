@@ -51,12 +51,18 @@ class MainWindow(QMainWindow):
         self.hide_grips = True # Show/Hide resize grips
         SetupMainWindow.setup_gui(self)
 
+        # SETUP PAGE_SETTINGS
+        # ///////////////////////////////////////////////////////////////  
+        self.settings_setup=SetupPageSettings()
+        self.settings_setup.ui=self.ui
+        self.settings_setup.setup_page_settings()
+
         # SETUP PAGE_VIDEOPLAYER
         # ///////////////////////////////////////////////////////////////
         self.video_player_setup=SetupPageVideoPlayer()
         self.video_player_setup.ui=self.ui
         self.video_player_setup.setup_player()
-
+        self.video_player_setup.bind_settings_class(self.settings_setup)
         # SETUP PAGE_TOOLS
         # ///////////////////////////////////////////////////////////////  
         self.tools_setup=SetupPageTools()
@@ -64,16 +70,15 @@ class MainWindow(QMainWindow):
         self.tools_setup.setup_page_tools()
         self.tools_setup.bind_video_class(self.video_player_setup)
 
-        # SETUP PAGE_SETTINGS
-        # ///////////////////////////////////////////////////////////////  
-        self.settings_setup=SetupPageSettings()
-        self.settings_setup.ui=self.ui
-        self.settings_setup.setup_page_settings()
-
         # SET WINDOW TITLE AND ICON
         # ///////////////////////////////////////////////////////////////
         self.setWindowTitle("CSCC-UJS-Apps")
-        self.setWindowIcon(QIcon("icon.ico"))
+        # 尝试加载ICO图标（Windows），如果失败则尝试PNG（Linux/macOS）
+        icon_path = "icon.ico"
+        if not os.path.exists(icon_path):
+            icon_path = "icon.png"
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
         
         # SHOW MAIN WINDOW
         # ///////////////////////////////////////////////////////////////
@@ -105,15 +110,6 @@ class MainWindow(QMainWindow):
 
             # Load Page 1
             MainFunctions.set_page(self, self.ui.load_pages.page_home)
-
-        # WIDGETS BTN
-        if btn.objectName() == "btn_widgets":
-            # Select Menu
-            self.ui.left_menu.select_only_one(btn.objectName())
-
-            # Load Page 2
-            MainFunctions.set_page(self, self.ui.load_pages.page_samples)
-
         # LOAD PAGE VIDEO PLAYER
         if btn.objectName() == "btn_video":
             # Select Menu
@@ -138,32 +134,6 @@ class MainWindow(QMainWindow):
             # Load Page 3 
             MainFunctions.set_page(self, self.ui.load_pages.page_settings)
 
-
-        # BOTTOM INFORMATION
-        if btn.objectName() == "btn_info":
-            # CHECK IF LEFT COLUMN IS VISIBLE
-            if not MainFunctions.left_column_is_visible(self):
-                self.ui.left_menu.select_only_one_tab(btn.objectName())
-
-                # Show / Hide
-                MainFunctions.toggle_left_column(self)
-                self.ui.left_menu.select_only_one_tab(btn.objectName())
-            else:
-                if btn.objectName() == "btn_close_left_column":
-                    self.ui.left_menu.deselect_all_tab()
-                    # Show / Hide
-                    MainFunctions.toggle_left_column(self)
-                
-                self.ui.left_menu.select_only_one_tab(btn.objectName())
-
-            # Change Left Column Menu
-            if btn.objectName() != "btn_close_left_column":
-                MainFunctions.set_left_column_menu(
-                    self, 
-                    menu = self.ui.left_column.menus.menu_2,
-                    title = "Info tab",
-                    icon_path = Functions.set_svg_icon("icon_info.svg")
-                )
 
         # SETTINGS LEFT
         if btn.objectName() == "btn_settings" or btn.objectName() == "btn_close_left_column":
@@ -241,7 +211,12 @@ if __name__ == "__main__":
     # APPLICATION
     # ///////////////////////////////////////////////////////////////
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("icon.ico"))
+    # 尝试加载ICO图标（Windows），如果失败则尝试PNG（Linux/macOS）
+    icon_path = "icon.ico"
+    if not os.path.exists(icon_path):
+        icon_path = "icon.png"
+    if os.path.exists(icon_path):
+        app.setWindowIcon(QIcon(icon_path))
     window = MainWindow()
 
     # EXEC APP

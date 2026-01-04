@@ -1,9 +1,22 @@
 import os
+import sys
 import tempfile
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.environ["PATH"] = script_dir + os.pathsep + os.environ["PATH"]
-import mpv
 import time
+
+# 在导入mpv之前设置PATH环境变量（Windows平台）
+from gui.core.platform_utils import is_windows, normalize_path, MPV_LIB_NAME
+
+if is_windows():
+    # 获取当前脚本所在目录
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    mpv_lib_path = os.path.join(current_dir, MPV_LIB_NAME)
+    if os.path.exists(mpv_lib_path):
+        # 将libmpv-2.dll所在目录添加到PATH
+        lib_dir = os.path.dirname(mpv_lib_path)
+        if lib_dir not in os.environ["PATH"]:
+            os.environ["PATH"] = lib_dir + os.pathsep + os.environ["PATH"]
+
+import mpv
 
 class MPVPlayerCore:
     def __init__(self):
@@ -11,7 +24,7 @@ class MPVPlayerCore:
             vo='gpu',  
             input_default_bindings=True,
             input_vo_keyboard=True,
-            osc=True, 
+            osc=False, 
             # SUBTITLE OPTIONS
             sid='no',
             sub_auto='no',
@@ -49,7 +62,12 @@ class MPVPlayerCore:
 
     def bind_to_window(self, win_id):
         #将MPV绑定到指定窗口
-        self.mpv_player.wid = str(int(win_id))
+        if is_windows():
+            # Windows: wid需要是字符串形式的整数
+            self.mpv_player.wid = str(int(win_id))
+        else:
+            # Linux/openEuler: 直接使用窗口ID
+            self.mpv_player.wid = int(win_id)
 
     def load_video(self, file_path):
         #加载并播放指定视频文件
@@ -336,6 +354,11 @@ class MPVPlayerCore:
 
         new_pos = max(current_pos - increment, 0)
         self.set_position(new_pos)
+
+    def set_play_speed(self, speed):
+        if speed <= 0:
+            raise ValueError("播放速度必须大于0")
+        self.mpv_player.speed = speed
 
     def cleanup(self):
         self.stop()
